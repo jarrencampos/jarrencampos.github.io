@@ -3,97 +3,87 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HVAC Maintenance Reminder – Comfortable HVAC Services</title>
-  <meta name="description" content="Free HVAC maintenance reminder. Get a personalized maintenance schedule for your system. Powered by Comfortable HVAC Services.">
+  <title>HVAC Maintenance Reminder — Comfortable HVAC Services</title>
+  <meta name="description" content="Free HVAC maintenance reminder. Get a personalized maintenance schedule for your system.">
   <style>
-    :root {
-      --primary: #1e40af;
-      --primary-dark: #1e3a8a;
-      --accent: #ea580c;
-      --bg: #f8fafc;
-      --text: #1e293b;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --danger: #dc2626;
-      --warning: #d97706;
-      --success: #16a34a;
-    }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
       overflow-x: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #f5f5f5;
+      color: #111;
       font-size: 14px;
+      line-height: 1.5;
     }
 
-    .tool-header {
-      background: linear-gradient(135deg, var(--primary-dark), #1d4ed8);
+    .tool-head {
+      background: #1c3a5a;
       color: #fff;
-      padding: 0.85rem 1.25rem;
+      padding: 0.75rem 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
-    .tool-header h2 { font-size: 1rem; font-weight: 800; }
-    .tool-header p { font-size: 0.73rem; opacity: 0.82; margin-top: 0.1rem; }
+    .tool-head svg { flex-shrink: 0; opacity: 0.9; }
+    .tool-head-text h2 { font-size: 0.9rem; font-weight: 700; }
+    .tool-head-text p { font-size: 0.71rem; opacity: 0.7; margin-top: 0.05rem; }
 
-    .body { padding: 1.1rem 1.25rem; }
+    .body { padding: 1rem 1.1rem; background: #fff; }
 
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.65rem;
-      margin-bottom: 0.65rem;
+      gap: 0.6rem;
+      margin-bottom: 0.6rem;
     }
-
-    .field { display: flex; flex-direction: column; gap: 0.22rem; }
+    .field { display: flex; flex-direction: column; gap: 0.2rem; }
     .field.full { grid-column: 1 / -1; }
 
     label {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 700;
-      color: var(--muted);
+      color: #555;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
 
     input, select {
-      padding: 0.48rem 0.65rem;
-      border: 1.5px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.875rem;
-      color: var(--text);
+      padding: 0.42rem 0.55rem;
+      border: 1px solid #ccc;
+      font-size: 0.85rem;
+      color: #111;
       background: #fff;
       width: 100%;
-      transition: border-color 0.15s;
+      appearance: auto;
+      transition: border-color 0.12s;
     }
-    input:focus, select:focus { outline: none; border-color: var(--primary); }
+    input:focus, select:focus { outline: none; border-color: #1c3a5a; }
 
     .calc-btn {
       width: 100%;
-      background: var(--accent);
+      background: #c04800;
       color: #fff;
       border: none;
-      padding: 0.65rem;
-      border-radius: 8px;
-      font-size: 0.92rem;
-      font-weight: 800;
+      padding: 0.6rem;
+      font-size: 0.88rem;
+      font-weight: 700;
       cursor: pointer;
       margin-bottom: 0.75rem;
-      transition: background 0.18s;
+      transition: background 0.15s;
     }
-    .calc-btn:hover { background: #c2410c; }
+    .calc-btn:hover { background: #9e3a00; }
 
-    /* Results */
+    /* Schedule */
     .result { display: none; }
     .result.show { display: block; }
 
-    .sched-title {
-      font-size: 0.7rem;
-      font-weight: 800;
+    .sched-heading {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #555;
       text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--muted);
+      letter-spacing: 0.06em;
       margin-bottom: 0.45rem;
     }
 
@@ -101,84 +91,95 @@
 
     .sched-item {
       display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.55rem 0.75rem;
-      border-radius: 8px;
-      margin-bottom: 0.38rem;
-      border: 1px solid;
+      align-items: flex-start;
+      gap: 0;
+      margin-bottom: 3px;
+      border: 1px solid #d8d8d8;
+      background: #fafafa;
     }
-    .sched-item.overdue { background: #fef2f2; border-color: #fecaca; }
-    .sched-item.soon    { background: #fffbeb; border-color: #fde68a; }
-    .sched-item.ok      { background: #f0fdf4; border-color: #bbf7d0; }
 
-    .sched-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
+    .sched-status-bar {
+      width: 4px;
+      align-self: stretch;
       flex-shrink: 0;
     }
-    .overdue .sched-dot { background: var(--danger); }
-    .soon    .sched-dot { background: var(--warning); }
-    .ok      .sched-dot { background: var(--success); }
+    .overdue .sched-status-bar { background: #9b1a1a; }
+    .soon    .sched-status-bar { background: #9a6500; }
+    .ok      .sched-status-bar { background: #1a5430; }
 
-    .sched-info { flex: 1; min-width: 0; }
-    .sched-task { font-weight: 700; font-size: 0.82rem; }
-    .sched-date { font-size: 0.71rem; color: var(--muted); }
-    .overdue .sched-date { color: var(--danger); font-weight: 600; }
-    .soon    .sched-date { color: var(--warning); font-weight: 600; }
+    .sched-content {
+      padding: 0.5rem 0.7rem;
+      flex: 1;
+      min-width: 0;
+    }
+    .sched-task { font-size: 0.82rem; font-weight: 600; color: #111; }
+    .sched-date { font-size: 0.7rem; color: #666; margin-top: 0.05rem; }
+    .overdue .sched-date { color: #9b1a1a; }
+    .soon    .sched-date { color: #7a5000; }
 
     .sched-badge {
-      font-size: 0.62rem;
-      font-weight: 800;
-      padding: 0.15rem 0.42rem;
-      border-radius: 999px;
-      white-space: nowrap;
+      align-self: center;
       flex-shrink: 0;
+      margin-right: 0.6rem;
+      font-size: 0.6rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.15rem 0.4rem;
+      border: 1px solid;
     }
-    .overdue .sched-badge { background: var(--danger); color: #fff; }
-    .soon    .sched-badge { background: var(--warning); color: #fff; }
-    .ok      .sched-badge { background: var(--success); color: #fff; }
+    .overdue .sched-badge { color: #9b1a1a; border-color: #9b1a1a; }
+    .soon    .sched-badge { color: #7a5000; border-color: #9a6500; }
+    .ok      .sched-badge { color: #1a5430; border-color: #1a5430; }
 
     .print-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      justify-content: center;
       width: 100%;
       background: #fff;
-      color: var(--primary);
-      border: 2px solid var(--primary);
-      padding: 0.5rem;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      font-weight: 700;
+      color: #1c3a5a;
+      border: 1px solid #1c3a5a;
+      padding: 0.48rem;
+      font-size: 0.78rem;
+      font-weight: 600;
       cursor: pointer;
-      margin-top: 0.75rem;
-      transition: all 0.18s;
+      margin-top: 0.65rem;
+      transition: all 0.15s;
     }
-    .print-btn:hover { background: var(--primary); color: #fff; }
+    .print-btn:hover { background: #1c3a5a; color: #fff; }
+    .print-btn svg { flex-shrink: 0; }
 
-    .tool-footer {
-      padding: 0.58rem 1.25rem;
-      background: #f1f5f9;
-      border-top: 1px solid var(--border);
+    .tool-foot {
+      padding: 0.55rem 1.1rem;
+      background: #f5f5f5;
+      border-top: 1px solid #ddd;
+      font-size: 0.67rem;
+      color: #777;
       text-align: center;
-      font-size: 0.69rem;
-      color: var(--muted);
     }
-    .tool-footer a { color: var(--primary); text-decoration: none; font-weight: 700; }
-    .tool-footer a:hover { text-decoration: underline; }
+    .tool-foot a { color: #1c3a5a; text-decoration: none; font-weight: 600; }
+    .tool-foot a:hover { text-decoration: underline; }
 
     @media print {
-      .calc-btn, .print-btn, .tool-footer { display: none; }
+      .calc-btn, .print-btn, .tool-foot { display: none; }
+      .tool-head { color: #000; background: none; border-bottom: 2px solid #000; }
     }
 
-    @media (max-width: 380px) {
+    @media (max-width: 360px) {
       .grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-<div class="tool-header">
-  <h2>🔔 HVAC Maintenance Reminder</h2>
-  <p>Get a personalized maintenance schedule for your system</p>
+<div class="tool-head">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+  <div class="tool-head-text">
+    <h2>HVAC Maintenance Reminder</h2>
+    <p>Generate a personalized maintenance schedule</p>
+  </div>
 </div>
 
 <div class="body">
@@ -212,28 +213,31 @@
     </div>
   </div>
 
-  <button class="calc-btn" onclick="generate()">Generate My Schedule →</button>
+  <button class="calc-btn" onclick="generate()">Generate Schedule</button>
 
   <div class="result" id="result">
-    <div class="sched-title">Your Upcoming Maintenance</div>
+    <div class="sched-heading">Upcoming maintenance</div>
     <ul class="sched-list" id="sched-list"></ul>
-    <button class="print-btn" onclick="window.print()">🖨️ Print Schedule</button>
+    <button class="print-btn" onclick="window.print()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print schedule
+    </button>
   </div>
 </div>
 
-<div class="tool-footer">
-  Powered by <a href="https://comfortablehvacservices.com" target="_blank" rel="noopener">Comfortable HVAC Services</a>
-  &nbsp;·&nbsp; <a href="https://jarrencampos.github.io" target="_blank">More Free HVAC Tools</a>
+<div class="tool-foot">
+  Provided by <a href="https://comfortablehvacservices.com" target="_blank" rel="noopener">Comfortable HVAC Services</a>
+  &nbsp;&middot;&nbsp;
+  <a href="https://jarrencampos.github.io" target="_blank">More free HVAC tools</a>
 </div>
 
 <script>
-  // Set sensible defaults
   const today = new Date();
   const iso = d => d.toISOString().split('T')[0];
-  const minus = (d, days) => { const x = new Date(d); x.setDate(x.getDate() - days); return x; };
+  const shiftDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 
-  document.getElementById('last-filter').value = iso(minus(today, 55));
-  document.getElementById('last-tuneup').value = iso(minus(today, 310));
+  document.getElementById('last-filter').value = iso(shiftDays(today, -55));
+  document.getElementById('last-tuneup').value = iso(shiftDays(today, -310));
 
   function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
   function addMonths(d, n) { const x = new Date(d); x.setMonth(x.getMonth() + n); return x; }
@@ -243,15 +247,15 @@
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
-  function status(due) {
+  function getStatus(due) {
     const diff = diffDays(today, due);
-    if (diff < 0)  return { cls: 'overdue', badge: 'OVERDUE',  sub: `${Math.abs(diff)}d overdue` };
-    if (diff <= 30) return { cls: 'soon',    badge: 'DUE SOON', sub: `Due in ${diff} days` };
-    return              { cls: 'ok',      badge: 'UPCOMING', sub: `Due in ${diff} days` };
+    if (diff < 0)   return { cls: 'overdue', badge: 'Overdue',  sub: Math.abs(diff) + 'd overdue' };
+    if (diff <= 30) return { cls: 'soon',    badge: 'Due soon', sub: 'Due in ' + diff + ' days' };
+    return               { cls: 'ok',      badge: 'Upcoming', sub: 'Due in ' + diff + ' days' };
   }
 
-  function nextSeasonalDate(month) {
-    const d = new Date(today.getFullYear(), month, 1);
+  function nextMonth(m) {
+    const d = new Date(today.getFullYear(), m, 1);
     if (today >= d) d.setFullYear(d.getFullYear() + 1);
     return d;
   }
@@ -261,57 +265,44 @@
     if (!filterVal) { alert('Please enter your last filter change date.'); return; }
 
     const lastFilter = new Date(filterVal);
-    const lastTuneup = new Date(document.getElementById('last-tuneup').value || iso(minus(today, 365)));
+    const lastTuneup = new Date(document.getElementById('last-tuneup').value || iso(shiftDays(today, -365)));
     const filterDays = parseInt(document.getElementById('filter-type').value);
     const sys = document.getElementById('system').value;
 
     const tasks = [
       {
-        task: '🔲 Air Filter Change',
+        task: 'Air Filter Replacement',
         due: addDays(lastFilter, filterDays),
       },
       {
-        task: sys === 'boiler'    ? '🔥 Annual Boiler Tune-Up'
-            : sys === 'heatpump' ? '⚡ Heat Pump Annual Service'
-            : sys === 'minisplit'? '🌀 Mini-Split Annual Service'
-            : '🔧 Annual HVAC Tune-Up',
+        task: sys === 'boiler' ? 'Annual Boiler Tune-Up'
+            : sys === 'heatpump' ? 'Annual Heat Pump Service'
+            : sys === 'minisplit' ? 'Annual Mini-Split Service'
+            : 'Annual HVAC Tune-Up',
         due: addMonths(lastTuneup, 12),
       },
       {
-        task: sys === 'boiler' ? '🚿 Flush Expansion Tank & Bleed Radiators' : '🧹 Coil &amp; Condensate Drain Cleaning',
+        task: sys === 'boiler' ? 'Expansion Tank Flush & Bleed Radiators' : 'Coil & Condensate Drain Cleaning',
         due: addMonths(lastTuneup, 12),
       },
-      {
-        task: '☀️ Spring AC / Cooling Startup',
-        due: nextSeasonalDate(2), // March
-      },
-      {
-        task: '🍂 Fall Heating System Prep',
-        due: nextSeasonalDate(8), // September
-      },
-      {
-        task: '🔋 Thermostat Battery Check',
-        due: nextSeasonalDate(10), // November
-      },
-      {
-        task: '🔍 Check &amp; Clear Outdoor Unit Area',
-        due: nextSeasonalDate(3), // April
-      },
+      { task: 'Spring AC / Cooling Startup Check', due: nextMonth(2) },
+      { task: 'Fall Heating System Preparation', due: nextMonth(8) },
+      { task: 'Thermostat Battery Replacement', due: nextMonth(10) },
+      { task: 'Clear & Inspect Outdoor Unit', due: nextMonth(3) },
     ];
 
     tasks.sort((a, b) => a.due - b.due);
 
     document.getElementById('sched-list').innerHTML = tasks.map(t => {
-      const s = status(t.due);
-      return `
-        <li class="sched-item ${s.cls}">
-          <div class="sched-dot"></div>
-          <div class="sched-info">
-            <div class="sched-task">${t.task}</div>
-            <div class="sched-date">${fmtDate(t.due)} &middot; ${s.sub}</div>
-          </div>
-          <span class="sched-badge">${s.badge}</span>
-        </li>`;
+      const s = getStatus(t.due);
+      return `<li class="sched-item ${s.cls}">
+        <div class="sched-status-bar"></div>
+        <div class="sched-content">
+          <div class="sched-task">${t.task}</div>
+          <div class="sched-date">${fmtDate(t.due)} &middot; ${s.sub}</div>
+        </div>
+        <span class="sched-badge">${s.badge}</span>
+      </li>`;
     }).join('');
 
     document.getElementById('result').classList.add('show');
