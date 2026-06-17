@@ -5,7 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BTU Calculator — Comfortable HVAC Services</title>
   <meta name="description" content="Free BTU calculator. Find the right AC or heating unit size for any room.">
+  <script>
+    (function() {
+      var p = new URLSearchParams(location.search);
+      var r = document.documentElement;
+      var ok = function(v) { return /^[0-9a-fA-F]{3,6}$/.test(v || '') ? '#' + v : null; };
+      var pri = ok(p.get('primary')), acc = ok(p.get('accent'));
+      if (pri) r.style.setProperty('--primary', pri);
+      if (acc) r.style.setProperty('--accent', acc);
+    })();
+  </script>
   <style>
+    :root { --primary: #1c3a5a; --accent: #c04800; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
@@ -18,7 +29,7 @@
     }
 
     .tool-head {
-      background: #1c3a5a;
+      background: var(--primary);
       color: #fff;
       padding: 0.75rem 1.1rem;
       display: flex;
@@ -58,11 +69,11 @@
       appearance: auto;
       transition: border-color 0.12s;
     }
-    input:focus, select:focus { outline: none; border-color: #1c3a5a; }
+    input:focus, select:focus { outline: none; border-color: var(--primary); }
 
     .calc-btn {
       width: 100%;
-      background: #c04800;
+      background: var(--accent);
       color: #fff;
       border: none;
       padding: 0.6rem;
@@ -70,12 +81,11 @@
       font-weight: 700;
       cursor: pointer;
       margin-bottom: 0.75rem;
-      transition: background 0.15s;
+      transition: filter 0.15s;
       letter-spacing: 0.01em;
     }
-    .calc-btn:hover { background: #9e3a00; }
+    .calc-btn:hover { filter: brightness(0.82); }
 
-    /* Result */
     .result { display: none; }
     .result.show { display: block; }
 
@@ -90,25 +100,19 @@
       text-align: center;
     }
     .result-primary-label { font-size: 0.68rem; color: #666; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; }
-    .result-btu { font-size: 2rem; font-weight: 800; color: #1c3a5a; letter-spacing: -0.02em; line-height: 1; }
+    .result-btu { font-size: 2rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; line-height: 1; }
     .result-btu-unit { font-size: 0.72rem; color: #666; margin-bottom: 0.45rem; }
     .result-tons {
       display: inline-block;
-      background: #1c3a5a;
+      background: var(--primary);
       color: #fff;
       font-size: 0.75rem;
       font-weight: 700;
       padding: 0.2rem 0.65rem;
     }
 
-    .result-secondary {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-    }
-    .result-cell {
-      padding: 0.65rem 1rem;
-      border-right: 1px solid #ddd;
-    }
+    .result-secondary { display: grid; grid-template-columns: 1fr 1fr; }
+    .result-cell { padding: 0.65rem 1rem; border-right: 1px solid #ddd; }
     .result-cell:last-child { border-right: none; }
     .result-cell-val { font-size: 0.88rem; font-weight: 700; color: #111; }
     .result-cell-label { font-size: 0.67rem; color: #666; margin-top: 0.05rem; }
@@ -138,7 +142,7 @@
       color: #777;
       text-align: center;
     }
-    .tool-foot a { color: #1c3a5a; text-decoration: none; font-weight: 600; }
+    .tool-foot a { color: var(--primary); text-decoration: none; font-weight: 600; }
     .tool-foot a:hover { text-decoration: underline; }
 
     @media (max-width: 360px) {
@@ -267,7 +271,7 @@
     const tons = btu / 12000;
     const tonsLabel = tons <= 1 ? '1 ton' : tons <= 1.5 ? '1.5 ton' : tons <= 2 ? '2 ton'
       : tons <= 2.5 ? '2.5 ton' : tons <= 3 ? '3 ton' : tons <= 3.5 ? '3.5 ton'
-      : tons <= 4 ? '4 ton' : tons <= 5 ? '5 ton' : `${Math.ceil(tons)} ton`;
+      : tons <= 4 ? '4 ton' : tons <= 5 ? '5 ton' : Math.ceil(tons) + ' ton';
 
     const unitMap = [
       [6000, 'Small window AC'], [8000, 'Window AC'],
@@ -276,7 +280,7 @@
       [36000, 'Central AC (3 ton)'], [48000, 'Central AC (4 ton)'],
       [60000, 'Central AC (5 ton)'], [Infinity, 'Commercial / packaged unit'],
     ];
-    const unit = unitMap.find(([max]) => btu <= max)[1];
+    const unit = unitMap.find(function(m) { return btu <= m[0]; })[1];
 
     document.getElementById('res-btu').textContent = btu.toLocaleString();
     document.getElementById('res-tons').textContent = tonsLabel + ' system';
@@ -285,7 +289,16 @@
     document.getElementById('res-unit').textContent = unit;
     document.getElementById('result').classList.add('show');
   }
-  document.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Enter') calculate(); });
+
+  window.addEventListener('message', function(e) {
+    if (!e.data || e.data.type !== 'hvac-colors') return;
+    var r = document.documentElement;
+    var ok = function(v) { return /^[0-9a-fA-F]{3,6}$/.test(v || '') ? '#' + v : null; };
+    var pri = ok(e.data.primary), acc = ok(e.data.accent);
+    if (pri) r.style.setProperty('--primary', pri);
+    if (acc) r.style.setProperty('--accent', acc);
+  });
 </script>
 </body>
 </html>

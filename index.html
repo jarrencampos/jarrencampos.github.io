@@ -208,10 +208,65 @@
     footer a { color: #aaa; text-decoration: none; }
     footer a:hover { color: #fff; }
 
+    /* Theme picker */
+    .theme-bar {
+      background: #fff;
+      border-bottom: 1px solid #d8d8d8;
+      padding: 0.55rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .theme-bar-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+    .swatches { display: flex; gap: 0.35rem; align-items: center; }
+    .swatch {
+      width: 18px;
+      height: 18px;
+      border: 2px solid transparent;
+      outline: none;
+      cursor: pointer;
+      padding: 0;
+      transition: border-color 0.12s;
+    }
+    .swatch:hover { border-color: #888; }
+    .swatch.active { border-color: #111; }
+    .color-pickers {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-left: auto;
+    }
+    .color-group {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.72rem;
+      color: #555;
+    }
+    .color-group label { cursor: pointer; white-space: nowrap; }
+    input[type="color"].picker {
+      width: 22px;
+      height: 18px;
+      border: 1px solid #ccc;
+      padding: 0;
+      cursor: pointer;
+      background: none;
+      vertical-align: middle;
+    }
+
     @media (max-width: 560px) {
       .tool-nav-inner { overflow-x: auto; }
       .embed-block-row { flex-direction: column; }
       .copy-btn { width: 100%; justify-content: center; padding: 0.55rem; }
+      .color-pickers { margin-left: 0; }
     }
   </style>
 </head>
@@ -227,6 +282,27 @@
 <div class="intro">
   <h1>Free HVAC Tools for Your Website</h1>
   <p>Add any calculator to your site with a single iframe. No signup, no cost.</p>
+</div>
+
+<div class="theme-bar">
+  <span class="theme-bar-label">Color scheme</span>
+  <div class="swatches">
+    <button class="swatch active" title="Navy"></button>
+    <button class="swatch" title="Forest"></button>
+    <button class="swatch" title="Slate"></button>
+    <button class="swatch" title="Burgundy"></button>
+    <button class="swatch" title="Charcoal"></button>
+  </div>
+  <div class="color-pickers">
+    <div class="color-group">
+      <label for="cp">Primary</label>
+      <input type="color" class="picker" id="cp" value="#1c3a5a">
+    </div>
+    <div class="color-group">
+      <label for="ca">Accent</label>
+      <input type="color" class="picker" id="ca" value="#c04800">
+    </div>
+  </div>
 </div>
 
 <nav class="tool-nav">
@@ -261,7 +337,7 @@
       </a>
     </div>
     <div class="tool-frame">
-      <iframe src="/btu-calculator.html" height="530" scrolling="no" title="BTU Calculator" loading="lazy"></iframe>
+      <iframe id="iframe-btu" src="/btu-calculator.html" height="530" scrolling="no" title="BTU Calculator" loading="lazy"></iframe>
     </div>
     <div class="embed-block">
       <div class="embed-block-label">Embed code</div>
@@ -288,7 +364,7 @@
       </a>
     </div>
     <div class="tool-frame">
-      <iframe src="/duct-sizing.html" height="470" scrolling="no" title="Duct Sizing Calculator" loading="lazy"></iframe>
+      <iframe id="iframe-duct" src="/duct-sizing.html" height="470" scrolling="no" title="Duct Sizing Calculator" loading="lazy"></iframe>
     </div>
     <div class="embed-block">
       <div class="embed-block-label">Embed code</div>
@@ -315,7 +391,7 @@
       </a>
     </div>
     <div class="tool-frame">
-      <iframe src="/maintenance-reminder.html" height="640" scrolling="no" title="HVAC Maintenance Reminder" loading="lazy"></iframe>
+      <iframe id="iframe-maint" src="/maintenance-reminder.html" height="640" scrolling="no" title="HVAC Maintenance Reminder" loading="lazy"></iframe>
     </div>
     <div class="embed-block">
       <div class="embed-block-label">Embed code</div>
@@ -343,22 +419,90 @@
 </footer>
 
 <script>
+  var PRESETS = [
+    { p: '1c3a5a', a: 'c04800', name: 'Navy' },
+    { p: '1e4420', a: 'b06000', name: 'Forest' },
+    { p: '2d4055', a: '006b6b', name: 'Slate' },
+    { p: '5c1a28', a: '8a6400', name: 'Burgundy' },
+    { p: '242424', a: 'c04800', name: 'Charcoal' },
+  ];
+
+  var TOOLS = [
+    { id: 'iframe-btu',   code: 'btu-code',   url: 'https://jarrencampos.github.io/btu-calculator.html',      h: 530 },
+    { id: 'iframe-duct',  code: 'duct-code',  url: 'https://jarrencampos.github.io/duct-sizing.html',         h: 470 },
+    { id: 'iframe-maint', code: 'maint-code', url: 'https://jarrencampos.github.io/maintenance-reminder.html', h: 640 },
+  ];
+
+  var colors = { p: '1c3a5a', a: 'c04800' };
+
+  function applyColors(p, a, fromPicker) {
+    colors = { p: p, a: a };
+
+    // Instant update via postMessage — no iframe reload
+    TOOLS.forEach(function(t) {
+      var iframe = document.getElementById(t.id);
+      try { iframe.contentWindow.postMessage({ type: 'hvac-colors', primary: p, accent: a }, '*'); } catch(e) {}
+    });
+
+    // Regenerate embed codes with color params baked in
+    TOOLS.forEach(function(t) {
+      var src = t.url + '?primary=' + p + '&accent=' + a;
+      document.getElementById(t.code).textContent =
+        '<iframe src="' + src + '" width="100%" height="' + t.h + '" frameborder="0" scrolling="no" loading="lazy"></iframe>';
+    });
+
+    if (!fromPicker) {
+      document.getElementById('cp').value = '#' + p;
+      document.getElementById('ca').value = '#' + a;
+    }
+
+    document.querySelectorAll('.swatch').forEach(function(s, i) {
+      s.classList.toggle('active', PRESETS[i].p === p && PRESETS[i].a === a);
+    });
+  }
+
+  // Init swatches
+  document.querySelectorAll('.swatch').forEach(function(s, i) {
+    s.style.background = '#' + PRESETS[i].p;
+    s.addEventListener('click', function() { applyColors(PRESETS[i].p, PRESETS[i].a, false); });
+  });
+
+  // Color pickers
+  document.getElementById('cp').addEventListener('input', function(e) {
+    applyColors(e.target.value.replace('#', ''), colors.a, true);
+  });
+  document.getElementById('ca').addEventListener('input', function(e) {
+    applyColors(colors.p, e.target.value.replace('#', ''), true);
+  });
+
+  // Re-send colors after each iframe loads (handles refresh / late load)
+  TOOLS.forEach(function(t) {
+    document.getElementById(t.id).addEventListener('load', function() {
+      try {
+        document.getElementById(t.id).contentWindow.postMessage(
+          { type: 'hvac-colors', primary: colors.p, accent: colors.a }, '*'
+        );
+      } catch(e) {}
+    });
+  });
+
   function copyCode(id, btn) {
-    const text = document.getElementById(id).textContent;
-    const label = btn.innerHTML;
-    const done = () => {
+    var text = document.getElementById(id).textContent;
+    var label = btn.innerHTML;
+    var done = function() {
       btn.innerHTML = 'Copied';
       btn.classList.add('copied');
-      setTimeout(() => { btn.innerHTML = label; btn.classList.remove('copied'); }, 2000);
+      setTimeout(function() { btn.innerHTML = label; btn.classList.remove('copied'); }, 2000);
     };
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(done).catch(() => fallback(text, done));
+      navigator.clipboard.writeText(text).then(done).catch(function() { fallback(text, done); });
     } else {
       fallback(text, done);
     }
   }
+
   function fallback(text, cb) {
-    const t = document.createElement('textarea');
+    var t = document.createElement('textarea');
     t.value = text; t.style.position = 'fixed'; t.style.opacity = '0';
     document.body.appendChild(t); t.select(); document.execCommand('copy');
     document.body.removeChild(t); cb();
