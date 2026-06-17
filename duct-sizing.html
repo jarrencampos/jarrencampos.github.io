@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duct Sizing Calculator – Comfortable HVAC Services</title>
+  <meta name="description" content="Free duct sizing calculator. Calculate round and rectangular duct dimensions from CFM. Powered by Comfortable HVAC Services.">
+  <style>
+    :root {
+      --primary: #1e40af;
+      --primary-dark: #1e3a8a;
+      --accent: #ea580c;
+      --bg: #f8fafc;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --result-bg: #eff6ff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      overflow-x: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .tool-header {
+      background: linear-gradient(135deg, var(--primary-dark), #1d4ed8);
+      color: #fff;
+      padding: 0.85rem 1.25rem;
+    }
+    .tool-header h2 { font-size: 1rem; font-weight: 800; }
+    .tool-header p { font-size: 0.73rem; opacity: 0.82; margin-top: 0.1rem; }
+
+    .body { padding: 1.1rem 1.25rem; }
+
+    /* Duct type toggle */
+    .type-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .type-btn {
+      padding: 0.58rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .type-btn.active {
+      border-color: var(--primary);
+      background: #eff6ff;
+      color: var(--primary);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 0.22rem; }
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .hint { font-size: 0.67rem; color: var(--muted); font-style: italic; }
+
+    input, select {
+      padding: 0.48rem 0.65rem;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      color: var(--text);
+      background: #fff;
+      width: 100%;
+      transition: border-color 0.15s;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--primary); }
+
+    #rect-field { display: none; }
+    #rect-field.show { display: flex; }
+
+    .calc-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.65rem;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 800;
+      cursor: pointer;
+      margin-bottom: 0.75rem;
+      transition: background 0.18s;
+    }
+    .calc-btn:hover { background: #c2410c; }
+
+    /* Result */
+    .result { display: none; }
+    .result.show { display: block; }
+
+    .result-box {
+      background: var(--result-bg);
+      border: 1.5px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+    }
+
+    .result-hero {
+      background: var(--primary);
+      color: #fff;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      text-align: center;
+      margin-bottom: 0.6rem;
+    }
+    .result-hero-val { font-size: 1.7rem; font-weight: 900; line-height: 1; }
+    .result-hero-label { font-size: 0.72rem; opacity: 0.85; margin-top: 0.2rem; }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .result-item {
+      background: #fff;
+      border: 1px solid #bfdbfe;
+      border-radius: 7px;
+      padding: 0.55rem 0.7rem;
+      text-align: center;
+    }
+    .result-item-val { font-size: 0.95rem; font-weight: 800; color: var(--primary-dark); }
+    .result-item-label { font-size: 0.66rem; color: var(--muted); margin-top: 0.1rem; }
+
+    /* Velocity indicator */
+    .velocity-bar-wrap {
+      margin-top: 0.65rem;
+      padding-top: 0.65rem;
+      border-top: 1px solid #bfdbfe;
+    }
+    .velocity-bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-bottom: 0.28rem;
+    }
+    .velocity-bar-track {
+      height: 8px;
+      background: #bfdbfe;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .velocity-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--primary);
+      transition: width 0.4s ease;
+    }
+
+    .disclaimer {
+      font-size: 0.67rem;
+      color: var(--muted);
+      text-align: center;
+      font-style: italic;
+      margin-top: 0.75rem;
+    }
+
+    .tool-footer {
+      padding: 0.58rem 1.25rem;
+      background: #f1f5f9;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.69rem;
+      color: var(--muted);
+    }
+    .tool-footer a { color: var(--primary); text-decoration: none; font-weight: 700; }
+    .tool-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 380px) {
+      .grid { grid-template-columns: 1fr; }
+      .result-grid { grid-template-columns: 1fr; }
+      .type-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="tool-header">
+  <h2>📐 Duct Sizing Calculator</h2>
+  <p>Calculate round &amp; rectangular duct dimensions from airflow (CFM)</p>
+</div>
+
+<div class="body">
+
+  <div class="type-row">
+    <button class="type-btn active" id="btn-round" onclick="setType('round')">⭕ Round Duct</button>
+    <button class="type-btn" id="btn-rect" onclick="setType('rect')">▭ Rectangular Duct</button>
+  </div>
+
+  <div class="grid">
+    <div class="field">
+      <label>Airflow (CFM)</label>
+      <input type="number" id="cfm" value="400" min="1" placeholder="e.g. 400">
+      <span class="hint">Cubic feet per minute</span>
+    </div>
+    <div class="field">
+      <label>Design Velocity (FPM)</label>
+      <select id="velocity">
+        <option value="600">600 — Quiet / bedroom</option>
+        <option value="700">700 — Low noise</option>
+        <option value="800" selected>800 — Standard branch</option>
+        <option value="900">900 — Main trunk</option>
+        <option value="1000">1000 — High velocity</option>
+      </select>
+      <span class="hint">Feet per minute</span>
+    </div>
+    <div class="field full" id="rect-field">
+      <label>Aspect Ratio (Width : Height)</label>
+      <select id="aspect">
+        <option value="1">1:1 — Square</option>
+        <option value="1.5" selected>1.5:1 — Common</option>
+        <option value="2">2:1 — Wide</option>
+        <option value="3">3:1 — Flat</option>
+        <option value="4">4:1 — Very flat</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">Calculate Duct Size →</button>
+
+  <div class="result" id="result">
+    <div class="result-box">
+      <div class="result-hero">
+        <div class="result-hero-val" id="res-size">—</div>
+        <div class="result-hero-label" id="res-size-label">Recommended duct size</div>
+      </div>
+      <div class="result-grid">
+        <div class="result-item">
+          <div class="result-item-val" id="res-area">—</div>
+          <div class="result-item-label">Cross-section area</div>
+        </div>
+        <div class="result-item">
+          <div class="result-item-val" id="res-vel">—</div>
+          <div class="result-item-label">Actual velocity</div>
+        </div>
+      </div>
+      <div class="velocity-bar-wrap">
+        <div class="velocity-bar-label">
+          <span>Quiet (600)</span>
+          <span id="vel-status">—</span>
+          <span>High (1000)</span>
+        </div>
+        <div class="velocity-bar-track">
+          <div class="velocity-bar-fill" id="vel-bar" style="width:0%"></div>
+        </div>
+      </div>
+      <p class="disclaimer">Sizes rounded up to standard dimensions. Use ACCA Manual D for full duct design.</p>
+    </div>
+  </div>
+</div>
+
+<div class="tool-footer">
+  Powered by <a href="https://comfortablehvacservices.com" target="_blank" rel="noopener">Comfortable HVAC Services</a>
+  &nbsp;·&nbsp; <a href="https://jarrencampos.github.io" target="_blank">More Free HVAC Tools</a>
+</div>
+
+<script>
+  let ductType = 'round';
+
+  function setType(type) {
+    ductType = type;
+    document.getElementById('btn-round').classList.toggle('active', type === 'round');
+    document.getElementById('btn-rect').classList.toggle('active', type === 'rect');
+    document.getElementById('rect-field').classList.toggle('show', type === 'rect');
+    document.getElementById('result').classList.remove('show');
+  }
+
+  function calculate() {
+    const cfm = parseFloat(document.getElementById('cfm').value) || 0;
+    const velocity = parseFloat(document.getElementById('velocity').value);
+
+    if (!cfm) { alert('Please enter the required airflow (CFM).'); return; }
+
+    const areaSqIn = (cfm / velocity) * 144;
+    let sizeLabel, actualArea, actualVel;
+
+    if (ductType === 'round') {
+      const rawDiam = 2 * Math.sqrt(areaSqIn / Math.PI);
+      const stdSizes = [4,5,6,7,8,9,10,12,14,16,18,20,22,24,26,28,30];
+      const diam = stdSizes.find(s => s >= rawDiam) || Math.ceil(rawDiam);
+      actualArea = Math.PI * Math.pow(diam / 2, 2);
+      actualVel = Math.round(cfm / (actualArea / 144));
+      sizeLabel = `${diam}" diameter`;
+      document.getElementById('res-size-label').textContent = 'Round duct diameter';
+    } else {
+      const ratio = parseFloat(document.getElementById('aspect').value);
+      const rawH = Math.sqrt(areaSqIn / ratio);
+      const h = Math.ceil(rawH);
+      const w = Math.ceil(areaSqIn / h);
+      actualArea = h * w;
+      actualVel = Math.round(cfm / (actualArea / 144));
+      sizeLabel = `${w}" × ${h}"`;
+      document.getElementById('res-size-label').textContent = 'Rectangular duct (W × H)';
+    }
+
+    const velPct = Math.min(100, Math.max(0, ((actualVel - 400) / 800) * 100));
+    const velStatus = actualVel < 600 ? 'Very quiet' : actualVel < 800 ? 'Quiet' : actualVel < 900 ? 'Standard' : actualVel < 1000 ? 'Moderate' : 'High velocity';
+
+    document.getElementById('res-size').textContent = sizeLabel;
+    document.getElementById('res-area').textContent = `${actualArea.toFixed(0)} in²`;
+    document.getElementById('res-vel').textContent = `${actualVel} FPM`;
+    document.getElementById('vel-bar').style.width = velPct + '%';
+    document.getElementById('vel-status').textContent = velStatus;
+    document.getElementById('result').classList.add('show');
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+</script>
+</body>
+</html>

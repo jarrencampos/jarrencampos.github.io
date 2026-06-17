@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HVAC Maintenance Reminder – Comfortable HVAC Services</title>
+  <meta name="description" content="Free HVAC maintenance reminder. Get a personalized maintenance schedule for your system. Powered by Comfortable HVAC Services.">
+  <style>
+    :root {
+      --primary: #1e40af;
+      --primary-dark: #1e3a8a;
+      --accent: #ea580c;
+      --bg: #f8fafc;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --success: #16a34a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      overflow-x: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .tool-header {
+      background: linear-gradient(135deg, var(--primary-dark), #1d4ed8);
+      color: #fff;
+      padding: 0.85rem 1.25rem;
+    }
+    .tool-header h2 { font-size: 1rem; font-weight: 800; }
+    .tool-header p { font-size: 0.73rem; opacity: 0.82; margin-top: 0.1rem; }
+
+    .body { padding: 1.1rem 1.25rem; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 0.22rem; }
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input, select {
+      padding: 0.48rem 0.65rem;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      color: var(--text);
+      background: #fff;
+      width: 100%;
+      transition: border-color 0.15s;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--primary); }
+
+    .calc-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.65rem;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 800;
+      cursor: pointer;
+      margin-bottom: 0.75rem;
+      transition: background 0.18s;
+    }
+    .calc-btn:hover { background: #c2410c; }
+
+    /* Results */
+    .result { display: none; }
+    .result.show { display: block; }
+
+    .sched-title {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin-bottom: 0.45rem;
+    }
+
+    .sched-list { list-style: none; }
+
+    .sched-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: 8px;
+      margin-bottom: 0.38rem;
+      border: 1px solid;
+    }
+    .sched-item.overdue { background: #fef2f2; border-color: #fecaca; }
+    .sched-item.soon    { background: #fffbeb; border-color: #fde68a; }
+    .sched-item.ok      { background: #f0fdf4; border-color: #bbf7d0; }
+
+    .sched-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .overdue .sched-dot { background: var(--danger); }
+    .soon    .sched-dot { background: var(--warning); }
+    .ok      .sched-dot { background: var(--success); }
+
+    .sched-info { flex: 1; min-width: 0; }
+    .sched-task { font-weight: 700; font-size: 0.82rem; }
+    .sched-date { font-size: 0.71rem; color: var(--muted); }
+    .overdue .sched-date { color: var(--danger); font-weight: 600; }
+    .soon    .sched-date { color: var(--warning); font-weight: 600; }
+
+    .sched-badge {
+      font-size: 0.62rem;
+      font-weight: 800;
+      padding: 0.15rem 0.42rem;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .overdue .sched-badge { background: var(--danger); color: #fff; }
+    .soon    .sched-badge { background: var(--warning); color: #fff; }
+    .ok      .sched-badge { background: var(--success); color: #fff; }
+
+    .print-btn {
+      width: 100%;
+      background: #fff;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      padding: 0.5rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 0.75rem;
+      transition: all 0.18s;
+    }
+    .print-btn:hover { background: var(--primary); color: #fff; }
+
+    .tool-footer {
+      padding: 0.58rem 1.25rem;
+      background: #f1f5f9;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.69rem;
+      color: var(--muted);
+    }
+    .tool-footer a { color: var(--primary); text-decoration: none; font-weight: 700; }
+    .tool-footer a:hover { text-decoration: underline; }
+
+    @media print {
+      .calc-btn, .print-btn, .tool-footer { display: none; }
+    }
+
+    @media (max-width: 380px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="tool-header">
+  <h2>🔔 HVAC Maintenance Reminder</h2>
+  <p>Get a personalized maintenance schedule for your system</p>
+</div>
+
+<div class="body">
+  <div class="grid">
+    <div class="field full">
+      <label>System Type</label>
+      <select id="system">
+        <option value="central">Central AC + Furnace</option>
+        <option value="heatpump">Heat Pump</option>
+        <option value="minisplit">Mini-Split System</option>
+        <option value="boiler">Boiler / Radiator System</option>
+      </select>
+    </div>
+    <div class="field full">
+      <label>Filter Type</label>
+      <select id="filter-type">
+        <option value="30">1" Fiberglass — change every 30 days</option>
+        <option value="60">1" Pleated — change every 60 days</option>
+        <option value="90" selected>1" Premium Pleated — change every 90 days</option>
+        <option value="180">4" Media Filter — change every 6 months</option>
+        <option value="365">5" HEPA / Whole-house — change yearly</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Last Filter Change</label>
+      <input type="date" id="last-filter">
+    </div>
+    <div class="field">
+      <label>Last Annual Tune-Up</label>
+      <input type="date" id="last-tuneup">
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="generate()">Generate My Schedule →</button>
+
+  <div class="result" id="result">
+    <div class="sched-title">Your Upcoming Maintenance</div>
+    <ul class="sched-list" id="sched-list"></ul>
+    <button class="print-btn" onclick="window.print()">🖨️ Print Schedule</button>
+  </div>
+</div>
+
+<div class="tool-footer">
+  Powered by <a href="https://comfortablehvacservices.com" target="_blank" rel="noopener">Comfortable HVAC Services</a>
+  &nbsp;·&nbsp; <a href="https://jarrencampos.github.io" target="_blank">More Free HVAC Tools</a>
+</div>
+
+<script>
+  // Set sensible defaults
+  const today = new Date();
+  const iso = d => d.toISOString().split('T')[0];
+  const minus = (d, days) => { const x = new Date(d); x.setDate(x.getDate() - days); return x; };
+
+  document.getElementById('last-filter').value = iso(minus(today, 55));
+  document.getElementById('last-tuneup').value = iso(minus(today, 310));
+
+  function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function addMonths(d, n) { const x = new Date(d); x.setMonth(x.getMonth() + n); return x; }
+  function diffDays(a, b) { return Math.round((b - a) / 86400000); }
+
+  function fmtDate(d) {
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function status(due) {
+    const diff = diffDays(today, due);
+    if (diff < 0)  return { cls: 'overdue', badge: 'OVERDUE',  sub: `${Math.abs(diff)}d overdue` };
+    if (diff <= 30) return { cls: 'soon',    badge: 'DUE SOON', sub: `Due in ${diff} days` };
+    return              { cls: 'ok',      badge: 'UPCOMING', sub: `Due in ${diff} days` };
+  }
+
+  function nextSeasonalDate(month) {
+    const d = new Date(today.getFullYear(), month, 1);
+    if (today >= d) d.setFullYear(d.getFullYear() + 1);
+    return d;
+  }
+
+  function generate() {
+    const filterVal = document.getElementById('last-filter').value;
+    if (!filterVal) { alert('Please enter your last filter change date.'); return; }
+
+    const lastFilter = new Date(filterVal);
+    const lastTuneup = new Date(document.getElementById('last-tuneup').value || iso(minus(today, 365)));
+    const filterDays = parseInt(document.getElementById('filter-type').value);
+    const sys = document.getElementById('system').value;
+
+    const tasks = [
+      {
+        task: '🔲 Air Filter Change',
+        due: addDays(lastFilter, filterDays),
+      },
+      {
+        task: sys === 'boiler'    ? '🔥 Annual Boiler Tune-Up'
+            : sys === 'heatpump' ? '⚡ Heat Pump Annual Service'
+            : sys === 'minisplit'? '🌀 Mini-Split Annual Service'
+            : '🔧 Annual HVAC Tune-Up',
+        due: addMonths(lastTuneup, 12),
+      },
+      {
+        task: sys === 'boiler' ? '🚿 Flush Expansion Tank & Bleed Radiators' : '🧹 Coil &amp; Condensate Drain Cleaning',
+        due: addMonths(lastTuneup, 12),
+      },
+      {
+        task: '☀️ Spring AC / Cooling Startup',
+        due: nextSeasonalDate(2), // March
+      },
+      {
+        task: '🍂 Fall Heating System Prep',
+        due: nextSeasonalDate(8), // September
+      },
+      {
+        task: '🔋 Thermostat Battery Check',
+        due: nextSeasonalDate(10), // November
+      },
+      {
+        task: '🔍 Check &amp; Clear Outdoor Unit Area',
+        due: nextSeasonalDate(3), // April
+      },
+    ];
+
+    tasks.sort((a, b) => a.due - b.due);
+
+    document.getElementById('sched-list').innerHTML = tasks.map(t => {
+      const s = status(t.due);
+      return `
+        <li class="sched-item ${s.cls}">
+          <div class="sched-dot"></div>
+          <div class="sched-info">
+            <div class="sched-task">${t.task}</div>
+            <div class="sched-date">${fmtDate(t.due)} &middot; ${s.sub}</div>
+          </div>
+          <span class="sched-badge">${s.badge}</span>
+        </li>`;
+    }).join('');
+
+    document.getElementById('result').classList.add('show');
+  }
+</script>
+</body>
+</html>
